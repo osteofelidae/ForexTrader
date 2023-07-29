@@ -266,5 +266,8 @@ def sell(account_id: str,
 
 
 # MAIN
-s.account_id = accounts()[0]["id"]  # Set account id
-sell(account_id=s.account_id, units=1)
+s.account_id = accounts()[0]["id"]  # Set account id - KEEP IN CODE
+
+
+# TESTING
+#sell(account_id=s.account_id, units=1)
