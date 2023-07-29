@@ -56,19 +56,19 @@ def accounts(key: str = s.API_KEY,
 
 
 def subscribe(iterations: int,
+              account_id: str,
               key: str = s.API_KEY,
               base: str = s.API_STREAM_BASE_URL,
-                    ticker: str = s.CURRENCY,
-                    account_id: str = s.account_id,
-                    verbose: bool = True):
+              ticker: str = s.CURRENCY,
+              verbose: bool = True):
 
     # FUNCTION: Subscribe to a channel and get a certain amount of raw data
 
     # PARAM (required): iterations: int: How many data points to collect.
+    # PARAM (required): account_id: str: Account ID
     # PARAM: key: str: API key
-    # PARAM: base: str: API streaming base URL
+    # PARAM: base: str: API stream base URL
     # PARAM: ticker: str: Currency pair to track eg. "EUR_USD"
-    # PARAM: account_id: str: Account ID
     # PARAM: verbose: Whether to print logs
 
     # TODO RETURN:
@@ -81,16 +81,29 @@ def subscribe(iterations: int,
         "Authorization": f"Bearer {key}"
     }  # Headers
 
-    query = f"?instruments={ticker}&snapshot=False"  # Query portion of URL
+    params = {
+        "instruments": ticker
+    }  # Query parameters
+
     path = f"/v3/accounts/{account_id}/pricing/stream"  # Path for API call
-    endpoint = base + path + query  # Full endpoint URL
+    endpoint = base + path  # Full endpoint URL
 
-    response = requests.get(url=endpoint, headers=headers)  # Make the request
+    response = requests.get(url=endpoint, headers=headers, params=params, stream=True)  # Subscribe
 
-    print(response.text)
+    if response.status_code == 200:  # If connection is successful
+
+        s.log(tag="api",
+              content=f"WebSocket connection successful...",
+              verbose=verbose)  # Log
+
+        for line in response.iter_lines():  # Iterate over response lines
+            if line:  # If line received
+
+                print(line)
+
 
 
 # MAIN
 s.account_id = accounts()[0]["id"]  # Set account id
 
-subscribe(iterations=10)
+subscribe(iterations=10, account_id=s.account_id)
