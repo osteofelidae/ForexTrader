@@ -133,7 +133,138 @@ def subscribe(iterations: int,
                 return data  # Return result and exit
 
 
+def buy(account_id: str,
+        units: int,
+        key: str = s.API_KEY,
+        base: str = s.API_REST_BASE_URL,
+        ticker: str = s.CURRENCY,
+        verbose: bool = True):
+
+    # FUNCTION: Buy base currency and sell quote currency (e.g. for EUR_USD, buy EUR and pay USD)
+
+    # PARAM (required): account_id: str: Account ID
+    # PARAM (required): units: int: Units of base currency to buy (e.g. for EUR_USD, EUR)
+    # PARAM: key: str: API key
+    # PARAM: base: str: API REST base URL
+    # PARAM: ticker: str: Currency pair to buy
+    # PARAM: verbose: bool: Whether to print logs
+
+    # RETURN (buy order): Buys forex
+
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json"
+    }  # Headers
+
+    request = {
+        "order": {
+            "units": f"{units}",
+            "instrument": f"{ticker}",
+            "timeInForce": "FOK",  # Fill Or Kill
+            "type": "MARKET",
+            "positionFill": "DEFAULT"
+        }
+    }
+    request = json.dumps(request)
+
+    path = f"/v3/accounts/{account_id}/orders"  # API path
+
+    endpoint = base + path  # Full API endpoint URL
+
+    response = requests.post(url=endpoint, headers=headers, data=request)  # Make the request
+
+    if response.status_code == 201:  # If request is successful
+
+        response_str = response.text  # Response content as str
+        response_dict = json.loads(response_str)  # Response content as dict
+        s.log(tag="api",
+              content=f"Placed order for {units} units of {ticker}.",
+              verbose=verbose)  # Log
+        # Bear in mind if the order is not fulfilled immediately, it is killed but still returns 201.
+        try:
+            cancel_status = response_dict["orderCancelTransaction"]["type"]  # Status of cancellation
+            cancel_reason = response_dict["orderCancelTransaction"]["reason"]  # Reason for cancellation
+            if cancel_status == "ORDER_CANCEL":  # If order gets cancelled
+                s.log(tag="api",
+                      content=f"Order cancelled. Error: {cancel_reason}",
+                      verbose=verbose)  # Log
+
+        except:
+            pass
+
+    else:
+
+        s.log(tag="api",
+              content=f"Failed to buy {ticker}. Error: {response.text}",
+              verbose=verbose)  # Log
+
+
+def sell(account_id: str,
+         units: int,
+         key: str = s.API_KEY,
+         base: str = s.API_REST_BASE_URL,
+         ticker: str = s.CURRENCY,
+         verbose: bool = True):
+
+    # FUNCTION: Buy base currency and sell quote currency (e.g. for EUR_USD, buy EUR and pay USD)
+
+    # PARAM (required): account_id: str: Account ID
+    # PARAM (required): units: int: Units of base currency to buy (e.g. for EUR_USD, EUR)
+    # PARAM: key: str: API key
+    # PARAM: base: str: API REST base URL
+    # PARAM: ticker: str: Currency pair to buy
+    # PARAM: verbose: bool: Whether to print logs
+
+    # RETURN (sell order): Sells forex.
+
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json"
+    }  # Headers
+
+    request = {
+        "order": {
+            "units": f"{-1 * units}",  # Times -1 to sell.
+            "instrument": f"{ticker}",
+            "timeInForce": "FOK",  # Fill Or Kill
+            "type": "MARKET",
+            "positionFill": "DEFAULT"
+        }
+    }
+    request = json.dumps(request)
+
+    path = f"/v3/accounts/{account_id}/orders"  # API path
+
+    endpoint = base + path  # Full API endpoint URL
+
+    response = requests.post(url=endpoint, headers=headers, data=request)  # Make the request
+
+    if response.status_code == 201:  # If request is successful
+
+        response_str = response.text  # Response content as str
+        response_dict = json.loads(response_str)  # Response content as dict
+        s.log(tag="api",
+              content=f"Placed order to sell {units} units of {ticker}.",
+              verbose=verbose)  # Log
+        # Bear in mind if the order is not fulfilled immediately, it is killed but still returns 201.
+        try:
+            cancel_status = response_dict["orderCancelTransaction"]["type"]  # Status of cancellation
+            cancel_reason = response_dict["orderCancelTransaction"]["reason"]  # Reason for cancellation
+            if cancel_status == "ORDER_CANCEL":  # If order gets cancelled
+                s.log(tag="api",
+                      content=f"Order cancelled. Error: {cancel_reason}",
+                      verbose=verbose)  # Log
+
+        except:
+            pass
+
+    else:
+
+        s.log(tag="api",
+              content=f"Failed to sell {ticker}. Error: {response.text}",
+              verbose=verbose)  # Log
+
+
 # MAIN
 s.account_id = accounts()[0]["id"]  # Set account id
-
-print(subscribe(iterations=1, account_id=s.account_id))
+sell(account_id=s.account_id, units=1)
