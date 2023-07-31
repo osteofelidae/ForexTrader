@@ -284,5 +284,5 @@ s.account_id = accounts()[0]["id"]  # Set account id - KEEP IN CODE
 # TESTING
 if __name__ == "__main__":
     a = subscribe(account_id=s.account_id, iterations=100000000, batch=200, file_path="datasets/collected.csv")
-    #data.export(data=a)
+
 #buy(account_id=s.account_id, units=1)
