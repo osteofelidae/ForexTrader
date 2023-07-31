@@ -6,6 +6,7 @@ import shared as s  # Shared values
 import requests
 import json
 import numpy as np
+import data as d
 
 
 # FUNCTIONS
@@ -58,6 +59,8 @@ def subscribe(iterations: int,
               key: str = s.API_KEY,
               base: str = s.API_STREAM_BASE_URL,
               ticker: str = s.CURRENCY,
+              batch: int = s.BATCH_SIZE,
+              file_path: str = None,
               verbose: bool = True):
 
     # FUNCTION: Subscribe to a channel and get a certain amount of raw data
@@ -67,6 +70,8 @@ def subscribe(iterations: int,
     # PARAM: key: str: API key
     # PARAM: base: str: API stream base URL
     # PARAM: ticker: str: Currency pair to track eg. "EUR_USD"
+    # PARAM: batch: int: Batch size to collect data
+    # PARAM: file_path: str: Path of filename to save to
     # PARAM: verbose: Whether to print logs
 
     # RETURN: data: ndarray: 2D numpy array of data points. Each point is formatted like: [close_bid, close_ask]
@@ -115,6 +120,10 @@ def subscribe(iterations: int,
                           content=f"Data point {iteration + 1} of {iterations} received.",
                           verbose=verbose)  # Log
 
+                    if file_path is not None and iteration % batch == 0:  # If on batch size and path is provided
+                        data_np = np.array(data)  # Convert to numpy array
+                        d.export(data=data_np, path=file_path, verbose=verbose)  # Export
+
                     iteration += 1  # Increment iteration counter
 
                 else:
@@ -125,6 +134,9 @@ def subscribe(iterations: int,
             elif iteration >= iterations:  # If loop is over
 
                 data = np.array(data)
+
+                if file_path is not None:  # If path is provided
+                    d.export(data=data, path=file_path, verbose=verbose)  # Export
 
                 s.log(tag="api",
                       content=f"Data collection of {iterations} points complete.",
@@ -270,4 +282,7 @@ s.account_id = accounts()[0]["id"]  # Set account id - KEEP IN CODE
 
 
 # TESTING
-#sell(account_id=s.account_id, units=1)
+if __name__ == "__main__":
+    a = subscribe(account_id=s.account_id, iterations=100000000, batch=200, file_path="datasets/collected.csv")
+    #data.export(data=a)
+#buy(account_id=s.account_id, units=1)
