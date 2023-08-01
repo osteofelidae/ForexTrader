@@ -122,7 +122,7 @@ def subscribe(iterations: int,
 
                     if file_path is not None and iteration % batch == 0:  # If on batch size and path is provided
                         data_np = np.array(data)  # Convert to numpy array
-                        d.export(data=data_np, path=file_path, verbose=verbose)  # Export
+                        d.save(data=data_np, path=file_path, verbose=verbose)  # Export
 
                     iteration += 1  # Increment iteration counter
 
@@ -136,7 +136,7 @@ def subscribe(iterations: int,
                 data = np.array(data)
 
                 if file_path is not None:  # If path is provided
-                    d.export(data=data, path=file_path, verbose=verbose)  # Export
+                    d.save(data=data, path=file_path, verbose=verbose)  # Export
 
                 s.log(tag="api",
                       content=f"Data collection of {iterations} points complete.",
