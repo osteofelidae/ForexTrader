@@ -142,10 +142,13 @@ def features(data: np.ndarray,
     engineered = np.hstack((raw[1:], new))  # Add new values to the side of raw array
 
     s.log(tag="data",
-          content=f"Computing features...",
+          content=f"Computed features.",
           verbose=verbose)  # Log
 
     return engineered  # Return result
+
+
+# TODO labels
 
 
 # TESTING
