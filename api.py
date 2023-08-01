@@ -76,73 +76,85 @@ def subscribe(iterations: int,
 
     # RETURN: data: ndarray: 2D numpy array of data points. Each point is formatted like: [close_bid, close_ask]
 
+    iteration = 0  # Iteration counter
+    data = []  # Dataset
+
     s.log(tag="api",
           content=f"Subscribing to {ticker} stream for {iterations} iterations...",
           verbose=verbose)  # Log
 
-    headers = {
-        "Authorization": f"Bearer {key}"
-    }  # Headers
+    while iteration < iterations:  # While data is not fully collected
 
-    params = {
-        "instruments": ticker
-    }  # Query parameters
+        try:  # Try statement for auto reconnect
 
-    path = f"/v3/accounts/{account_id}/pricing/stream"  # Path for API call
-    endpoint = base + path  # Full endpoint URL
+            headers = {
+                "Authorization": f"Bearer {key}"
+            }  # Headers
 
-    response = requests.get(url=endpoint, headers=headers, params=params, stream=True)  # Subscribe
+            params = {
+                "instruments": ticker
+            }  # Query parameters
 
-    if response.status_code == 200:  # If connection is successful
+            path = f"/v3/accounts/{account_id}/pricing/stream"  # Path for API call
+            endpoint = base + path  # Full endpoint URL
 
-        s.log(tag="api",
-              content=f"WebSocket connection successful...",
-              verbose=verbose)  # Log
+            response = requests.get(url=endpoint, headers=headers, params=params, stream=True)  # Subscribe
 
-        iteration = 0  # Iteration counter
-        data = []  # Dataset
-        for point_raw in response.iter_lines():  # Iterate over response lines
-            if point_raw and iteration < iterations:  # If line received
-
-                point_str = point_raw.decode()  # Decode bytes to str
-                point = json.loads(point_str)  # Parse str to dict
-
-                if point["type"] == "PRICE":  # If given data is price
-
-                    # bids = point["bids"]  # Bid price (sell at this price)  --> Currently not in use
-                    # asks = point["asks"]  # Ask price (buy at this price)  --> Currently not in use
-                    close_bid = float(point["closeoutBid"])  # Price to close a long (buy) position, i.e. to sell assets
-                    close_ask = float(point["closeoutAsk"])  # Price to close a long (buy) position, i.e. to buy assets
-
-                    data.append([close_bid, close_ask])  # Append data point
-
-                    s.log(tag="api",
-                          content=f"Data point {iteration + 1} of {iterations} received.",
-                          verbose=verbose)  # Log
-
-                    if file_path is not None and iteration % batch == 0:  # If on batch size and path is provided
-                        data_np = np.array(data)  # Convert to numpy array
-                        d.save(data=data_np, path=file_path, verbose=verbose)  # Export
-
-                    iteration += 1  # Increment iteration counter
-
-                else:
-                    s.log(tag="api",
-                          content=f"Extraneous data received & dropped.",
-                          verbose=verbose)  # Log
-
-            elif iteration >= iterations:  # If loop is over
-
-                data = np.array(data)
-
-                if file_path is not None:  # If path is provided
-                    d.save(data=data, path=file_path, verbose=verbose)  # Export
+            if response.status_code == 200:  # If connection is successful
 
                 s.log(tag="api",
-                      content=f"Data collection of {iterations} points complete.",
+                      content=f"WebSocket connection successful...",
                       verbose=verbose)  # Log
 
-                return data  # Return result and exit
+
+                for point_raw in response.iter_lines():  # Iterate over response lines
+                    if point_raw and iteration < iterations:  # If line received
+
+                        point_str = point_raw.decode()  # Decode bytes to str
+                        point = json.loads(point_str)  # Parse str to dict
+
+                        if point["type"] == "PRICE":  # If given data is price
+
+                            # bids = point["bids"]  # Bid price (sell at this price)  --> Currently not in use
+                            # asks = point["asks"]  # Ask price (buy at this price)  --> Currently not in use
+                            close_bid = float(point["closeoutBid"])  # Price to close a long (buy) position, i.e. to sell assets
+                            close_ask = float(point["closeoutAsk"])  # Price to close a long (buy) position, i.e. to buy assets
+
+                            data.append([close_bid, close_ask])  # Append data point
+
+                            s.log(tag="api",
+                                  content=f"Data point {iteration + 1} of {iterations} received.",
+                                  verbose=verbose)  # Log
+
+                            if file_path is not None and iteration % batch == 0:  # If on batch size and path is provided
+                                data_np = np.array(data)  # Convert to numpy array
+                                d.save(data=data_np, path=file_path, verbose=verbose)  # Export
+
+                            iteration += 1  # Increment iteration counter
+
+                        else:
+                            s.log(tag="api",
+                                  content=f"Extraneous data received & dropped.",
+                                  verbose=verbose)  # Log
+
+                    elif iteration >= iterations:  # If loop is over
+
+                        data = np.array(data)
+
+                        if file_path is not None:  # If path is provided
+                            d.save(data=data, path=file_path, verbose=verbose)  # Export
+
+                        s.log(tag="api",
+                              content=f"Data collection of {iterations} points complete.",
+                              verbose=verbose)  # Log
+
+                        return data  # Return result and exit
+
+        except:  # If error (usually disconnect)
+
+            s.log(tag="api",
+                  content=f"Unexpected error while subscribed. Reconnecting...",
+                  verbose=verbose)  # Log
 
 
 def buy(account_id: str,
