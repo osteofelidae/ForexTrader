@@ -150,6 +150,15 @@ def subscribe(iterations: int,
 
                         return data  # Return result and exit
 
+            else:  # If connection is unsuccessful
+
+                # TODO error code
+                s.log(tag="api",
+                      content=f"Could not connect.",
+                      verbose=verbose)  # Log
+
+                return  # Exit
+
         except:  # If error (usually disconnect)
 
             s.log(tag="api",
