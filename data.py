@@ -149,6 +149,13 @@ def features(data: np.ndarray,
 
 
 # TODO labels
+def labels():
+
+    # FUNCTION: Add labels to data
+
+    # TODO RETURN
+
+    # TODO EVERYTHING
 
 
 # TESTING
