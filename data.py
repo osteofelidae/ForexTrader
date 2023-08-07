@@ -75,6 +75,28 @@ def scope(data: np.ndarray,
     return scoped  # Return result
 
 
+def f_scope(data: np.ndarray,
+            length: int,
+            index: int):
+
+    # FUNCTION: get in scope items to the front
+
+    # PARAM: data: ndarray: dataset
+    # PARAM: length: int: length of in-scope items
+    # PARAM: index: int: index where data becomes out of scope (ending index)
+
+    # OUT: scoped: ndarray: in-scope items
+
+    index = index if index >= 0 else index + len(data)  # Deal with negative indexes (indexing from end)
+
+    start = index  # Starting index
+    end = min([data.shape[0], index + length])  # Ending index
+
+    scoped = data[start:end]  # In-scope items
+
+    return scoped  # Return result
+
+
 def features(data: np.ndarray,
              intervals: list[int] = s.FEATURE_INTERVALS,
              verbose: bool = True):
@@ -148,17 +170,46 @@ def features(data: np.ndarray,
     return engineered  # Return result
 
 
-# TODO labels
-def labels():
+def labels(data: np.ndarray,
+           length: int = s.LABEL_SCOPE_LENGTH,
+           verbose: bool = True):
 
     # FUNCTION: Add labels to data
 
-    # TODO RETURN
+    # PARAM: data: ndarray: dataset
+    # PARAM: length: int: Number of future points to scan for profit
+    # PARAM: verbose: bool: Whether to print logs
 
-    # TODO EVERYTHING
+    # RETURN: labelled: ndarray: Labels without data
+
+    labelled = []  # Array of labels
+
+    for index in range(data.shape[0]):  # Iterate over data
+
+        scoped = f_scope(data=data, index=index, length=length)  # Scope future items
+
+        bids = scoped[:, 0]  # Bid prices
+        asks = scoped[:, 1]  # Ask prices
+
+        min_ask = np.min(asks)  # Minimum ask price in scope
+        current_bid = bids[0]  # Current bid price in scope
+
+        condition = min_ask < current_bid  # Condition for labels
+
+        if condition:  # If profitable
+            labelled.append(1)  # Add 1
+        else:  # If not
+            labelled.append(0)  # Add 0
+
+    labelled = np.array(labelled)  # Convert to numpy array
+
+    return labelled  # Return result
 
 
 # TESTING
 if __name__ == "__main__":
-
-    print(features(load(path="datasets/AUD_USD/3.csv")))
+    data = load(path="datasets/AUD_USD/3.csv")
+    #print(features(data=data))
+    labelled = labels(data)
+    print(len(labelled[labelled == 1]),len(labelled[labelled == 0]))
+    #print(f_scope(data=data, length=10, index=-2))
