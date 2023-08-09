@@ -186,7 +186,9 @@ def labels(data: np.ndarray,
 
     labelled = []  # Array of labels
 
-    for index in range(data.shape[0]):  # Iterate over data
+    for index_f in range(data.shape[0]-1):  # Iterate over data
+
+        index = index_f + 1
 
         scoped = f_scope(data=data, index=index, length=length)  # Scope future items
 
@@ -205,7 +207,7 @@ def labels(data: np.ndarray,
 
     labelled = np.array(labelled)  # Convert to numpy array
 
-    return labelled[1:]  # Return result except first term, to match with features
+    return labelled  # Return result except first term, to match with features
 
 
 def normalize(data: np.ndarray,
@@ -220,10 +222,10 @@ def normalize(data: np.ndarray,
 
     # TODO verbose
 
-    mean = np.mean(data, axis=0)  # Array of means
+    mean = np.mean(data[:,0])  # Array of means
     std = np.std(data, axis=0)  # Array of standard deviations
 
-    normalized = (data - mean) / (2 * std)  # Calculate normalized array
+    normalized = (data - mean)# / (2 * std)  # Calculate normalized array
 
     return normalized  # Return calculated result
 

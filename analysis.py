@@ -10,7 +10,7 @@ import shared as s
 
 
 # VARIABLES
-t_balance = 10
+t_balance = 0
 t_crypto = 0
 t_holding = False
 
@@ -95,7 +95,7 @@ def data_overview(x: np.ndarray,
         _, loss_accuracy = model.evaluate(x=loss_x, y=loss_y, verbose=0)
         _, overall_accuracy = model.evaluate(x=x, y=y)
 
-        predictions = model.predict(x)
+        predictions = model.predict(x, verbose=0)
 
         count1 = 0
         last_price = 0.0
@@ -104,7 +104,7 @@ def data_overview(x: np.ndarray,
             prediction = predictions[index]
             point = raw[index]
 
-            profit = prediction[0] > 0.5
+            profit = prediction[0] >= 0.5
 
             loss = prediction[0] < 0.5
 
@@ -114,7 +114,7 @@ def data_overview(x: np.ndarray,
                 count1 = 0
                 last_price = point[1]
 
-            elif (loss and t_holding and point[0] > last_price) or count1 >= s.LABEL_SCOPE_LENGTH:
+            elif (loss and t_holding and point[0] > last_price):# or count1 >= s.LABEL_SCOPE_LENGTH:
 
                 t_sell_all(point=point)
 
@@ -127,8 +127,11 @@ def data_overview(x: np.ndarray,
         point_count = data.shape[0]
 
         print(f"Profit: {count[0] / total * 100}% Loss: {count[1] / total * 100}%")
-        result = (f"Model accuracy: Profit {profit_accuracy * 100}% \t Loss {loss_accuracy * 100}% \t Overall {overall_accuracy * 100}% \t Profit ${t_balance - 10} over {point_count} points")
+        result = (f"Model accuracy: Profit {profit_accuracy * 100}% \t Loss {loss_accuracy * 100}% \t Overall {overall_accuracy * 100}% \t Profit ${t_balance} over {point_count} points")
         print(result)
+        t_balance = 0
+        t_crypto = 0
+        t_holding = False
         return result
 
 
