@@ -172,12 +172,14 @@ def features(data: np.ndarray,
 
 def labels(data: np.ndarray,
            length: int = s.LABEL_SCOPE_LENGTH,
+           margin: float = s.PROFIT_MARGIN,
            verbose: bool = True):
 
     # FUNCTION: Add labels to data
 
     # PARAM: data: ndarray: dataset
     # PARAM: length: int: Number of future points to scan for profit
+    # PARAM: margin: float: Multiplier of profit margin
     # PARAM: verbose: bool: Whether to print logs
 
     # RETURN: labelled: ndarray: Labels without data
@@ -194,16 +196,36 @@ def labels(data: np.ndarray,
         min_ask = np.min(asks)  # Minimum ask price in scope
         current_bid = bids[0]  # Current bid price in scope
 
-        condition = min_ask < current_bid  # Condition for labels
+        condition = min_ask * margin < current_bid  # Condition for labels
 
         if condition:  # If profitable
-            labelled.append(1)  # Add 1
+            labelled.append([1])  # Add 1
         else:  # If not
-            labelled.append(0)  # Add 0
+            labelled.append([0])  # Add 0
 
     labelled = np.array(labelled)  # Convert to numpy array
 
-    return labelled  # Return result
+    return labelled[1:]  # Return result except first term, to match with features
+
+
+def normalize(data: np.ndarray,
+              verbose: bool = True):
+
+    # FUNCTION: normalize data
+
+    # PARAM: data: ndarray: dataset
+    # PARAM: verbose: bool: whether to print logs
+
+    # RETURN: normalized: ndarray: normalized dataset
+
+    # TODO verbose
+
+    mean = np.mean(data, axis=0)  # Array of means
+    std = np.std(data, axis=0)  # Array of standard deviations
+
+    normalized = (data - mean) / (2 * std)  # Calculate normalized array
+
+    return normalized  # Return calculated result
 
 
 # TESTING

@@ -5,17 +5,19 @@
 import numpy as np
 import tensorflow as tf
 import shared as s
+import data as d
+import analysis as a
 
 
 # FUNCTIONS
 def init(x: np.ndarray,
          y: np.ndarray,
-         epochs: int = 10000,
-         batch_size: int = 2048,
+         epochs: int = 500,
+         batch_size: int = 512,
          learning_rate: float = 0.001,
-         dropout_percent: float = 0.1,
-         regularization_strength: float = 0.02,
-         neurons: int = 40,
+         dropout_percent: float = 0,
+         regularization_strength: float = 0,
+         neurons: int = 20,
          verbose: bool = True,
          tf_verbose: int = 0):
 
@@ -44,11 +46,11 @@ def init(x: np.ndarray,
         tf.keras.layers.Dense(x.shape[1], activation='sigmoid', input_shape=(x.shape[1],)),
         tf.keras.layers.Dropout(dropout_percent),
         tf.keras.layers.Dense(neurons, activation='sigmoid', kernel_regularizer=regularizer),
-        tf.keras.layers.Dense(2, activation='softmax')
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)  # Define optimizer
-    loss = tf.losses.CategoricalCrossentropy()
+    loss = tf.losses.BinaryCrossentropy()
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])  # Compile
 
     model.fit(x, y, epochs=epochs, batch_size=batch_size, verbose=tf_verbose)  # Train
@@ -59,3 +61,34 @@ def init(x: np.ndarray,
 
     return model
 
+
+# TESTING
+if __name__ == "__main__":
+
+    INTERVALS_TEMP = [5, 10, 20]  # TODO change
+    LENGTH_TEMP = 200
+
+    data = d.load(path="datasets/AUD_USD/3.csv")
+    x = d.normalize(data=d.features(data=data,
+                                    intervals=INTERVALS_TEMP))
+    y = d.labels(data, length=LENGTH_TEMP)
+
+    d.save(data=x, path="datasets/AUD_USD/testing/x.csv")
+    d.save(data=y, path="datasets/AUD_USD/testing/y.csv")
+
+    model = init(x=x, y=y, tf_verbose=1,  # TODO change
+                 epochs=1000,
+                 batch_size=256,
+                 learning_rate=0.001,
+                 neurons=10,
+                 dropout_percent=0
+                 )
+
+    datat = d.load(path="datasets/AUD_USD/1.csv")
+    xt = d.normalize(data=d.features(data=datat,
+                                     intervals=INTERVALS_TEMP))
+    yt = d.labels(datat, length=LENGTH_TEMP)
+
+    a.data_overview(x=x, y=y, raw=data, model=model)
+    a.data_overview(x=xt, y=yt, raw=datat, model=model)
+    

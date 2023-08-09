@@ -15,7 +15,8 @@ CURRENCY = "AUD_USD"  # ID of currency to track
 BATCH_SIZE = 1000  # Size of batches for data collection
 FEATURE_INTERVALS = [5, 10, 20]  # Intervals for features to be calculated
 FILE_PATH = "datasets/collected.csv"
-LABEL_SCOPE_LENGTH = 100  # Number of future data points to scan for profit
+LABEL_SCOPE_LENGTH = 500  # Number of future data points to scan for profit
+PROFIT_MARGIN = 1  # Amount of profit there should be per cycle
 
 
 # VARIABLES
