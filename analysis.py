@@ -114,7 +114,7 @@ def data_overview(x: np.ndarray,
                 count1 = 0
                 last_price = point[1]
 
-            elif (loss and t_holding and point[0] > last_price):# or count1 >= s.LABEL_SCOPE_LENGTH:
+            elif (loss and t_holding and point[0] > last_price*1.001):# or count1 >= s.LABEL_SCOPE_LENGTH:
 
                 t_sell_all(point=point)
 
@@ -122,7 +122,9 @@ def data_overview(x: np.ndarray,
 
                 count1 += 1
 
-        t_sell_all(point=point)
+        t_holding = False
+        t_balance += t_crypto * last_price
+        t_crypto = 0
 
         point_count = data.shape[0]
 

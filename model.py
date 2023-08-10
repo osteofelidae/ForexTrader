@@ -44,8 +44,9 @@ def init(x: np.ndarray,
 
     model = tf.keras.Sequential([  # Define model
         tf.keras.layers.Dense(x.shape[1], activation='sigmoid', input_shape=(x.shape[1],)),
-        tf.keras.layers.Dropout(dropout_percent),
+        #tf.keras.layers.Dropout(dropout_percent),
         tf.keras.layers.Dense(neurons, activation='sigmoid', kernel_regularizer=regularizer),
+        #tf.keras.layers.Dense(neurons/2, activation='sigmoid', kernel_regularizer=regularizer),
         tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
@@ -67,50 +68,30 @@ if __name__ == "__main__":
 
     INTERVALS_TEMP = [100, 200]  # TODO change
     LENGTH_TEMP = 200
+    BATCH_NORM_TEMP = 100
 
     data = d.load(path="datasets/AUD_USD/3.csv")
     y = d.labels(data, length=LENGTH_TEMP)
-    x = d.normalize(data=d.features(data=data,
-                                    intervals=INTERVALS_TEMP))
+    x = d.batch_norm(data=d.features(data=data,
+                                     intervals=INTERVALS_TEMP),
+                     batch=BATCH_NORM_TEMP)
 
 
-    d.save(data=x, path="datasets/AUD_USD/testing/x.csv")
-    d.save(data=y, path="datasets/AUD_USD/testing/y.csv")
+    #d.save(data=x, path="datasets/AUD_USD/testing/x.csv")
+    #d.save(data=y, path="datasets/AUD_USD/testing/y.csv")
 
     model = init(x=x, y=y, tf_verbose=1,  # TODO change
-                 epochs=5000,
+                 epochs=1000,
                  batch_size=512,
-                 learning_rate=0.005,
+                 learning_rate=0.01,
                  neurons=20,
                  dropout_percent=0
                  )
 
-    data1 = d.load(path="datasets/AUD_USD/1.csv", verbose=False)
-    y1 = d.labels(data1, length=LENGTH_TEMP, verbose=False)
-    x1 = d.normalize(data=d.features(data=data1,
-                                     intervals=INTERVALS_TEMP, verbose=False), verbose=False)
-    a.data_overview(x=x1, y=y1, raw=data1, model=model)
-
-    data1 = d.load(path="datasets/AUD_USD/2.csv", verbose=False)
-    y1 = d.labels(data1, length=LENGTH_TEMP, verbose=False)
-    x1 = d.normalize(data=d.features(data=data1,
-                                     intervals=INTERVALS_TEMP, verbose=False), verbose=False)
-    a.data_overview(x=x1, y=y1, raw=data1, model=model)
-
-    data1 = d.load(path="datasets/AUD_USD/3.csv", verbose=False)
-    y1 = d.labels(data1, length=LENGTH_TEMP, verbose=False)
-    x1 = d.normalize(data=d.features(data=data1,
-                                     intervals=INTERVALS_TEMP, verbose=False), verbose=False)
-    a.data_overview(x=x1, y=y1, raw=data1, model=model)
-
-    data1 = d.load(path="datasets/AUD_USD/4.csv", verbose=False)
-    y1 = d.labels(data1, length=LENGTH_TEMP, verbose=False)
-    x1 = d.normalize(data=d.features(data=data1,
-                                     intervals=INTERVALS_TEMP, verbose=False), verbose=False)
-    a.data_overview(x=x1, y=y1, raw=data1, model=model)
-
-    data1 = d.load(path="datasets/AUD_USD/5.csv", verbose=False)
-    y1 = d.labels(data1, length=LENGTH_TEMP, verbose=False)
-    x1 = d.normalize(data=d.features(data=data1,
-                                     intervals=INTERVALS_TEMP, verbose=False), verbose=False)
-    a.data_overview(x=x1, y=y1, raw=data1, model=model)
+    for i in range(1, 4):
+        data = d.load(path=f"datasets/AUD_USD/{i}.csv")
+        y = d.labels(data, length=LENGTH_TEMP)
+        x = d.batch_norm(data=d.features(data=data,
+                                         intervals=INTERVALS_TEMP),
+                         batch=BATCH_NORM_TEMP)
+        a.data_overview(x=x, y=y, raw=data, model=model)

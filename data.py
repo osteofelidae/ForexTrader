@@ -225,15 +225,47 @@ def normalize(data: np.ndarray,
     mean = np.mean(data[:,0])  # Array of means
     std = np.std(data, axis=0)  # Array of standard deviations
 
-    normalized = (data - mean)# / (2 * std)  # Calculate normalized array
+    normalized = (data - mean)# / ( std)  # Calculate normalized array
 
     return normalized  # Return calculated result
+
+
+def batch_norm(data: np.ndarray,
+               batch: int = s.BATCH_SIZE,
+               verbose: bool = True):
+
+    # FUNCTION: normalize data in batches
+
+    # PARAM: data: ndarray: Dataset
+    # PARAM: batch: int: Batch size
+    # PARAM: verbose: bool: Whether to print logs
+
+    # RETURN: normalized: ndarray: Normalized dataset
+
+    s.log(tag="data",
+          content=f"Batch normalizing...",
+          verbose=verbose)  # Log
+
+    normalized = []
+    for row_i in range(len(data)):  # Iterate over row indexes
+
+        scoped = scope(data=data, index=row_i, length=batch) if row_i != 0 else [data[0]]  # Scope items
+        means = np.mean(scoped, axis=0)  # Means
+        stds = np.std(scoped, axis=0) + 1e-8  # Array of standard deviations
+        normalized.append((data[row_i] - means)/(2 *stds))  # Normalize and append result
+
+    s.log(tag="data",
+          content=f"Batch normalized.",
+          verbose=verbose)  # Log
+
+    return np.array(normalized)  # Return result
 
 
 # TESTING
 if __name__ == "__main__":
     data = load(path="datasets/AUD_USD/3.csv")
-    #print(features(data=data))
+    featured = features(data=data)
     labelled = labels(data)
-    print(len(labelled[labelled == 1]),len(labelled[labelled == 0]))
+    print(batch_norm(data=featured))
+    #print(len(labelled[labelled == 1]),len(labelled[labelled == 0]))
     #print(f_scope(data=data, length=10, index=-2))
