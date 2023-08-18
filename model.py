@@ -66,9 +66,9 @@ def init(x: np.ndarray,
 # TESTING
 if __name__ == "__main__":
 
-    INTERVALS_TEMP = [100, 200]  # TODO change
+    INTERVALS_TEMP = [10, 100]  # TODO change
     LENGTH_TEMP = 200
-    BATCH_NORM_TEMP = 100
+    BATCH_NORM_TEMP = 200
 
     data = d.load(path="datasets/AUD_USD/3.csv")
     y = d.labels(data, length=LENGTH_TEMP)
@@ -82,13 +82,13 @@ if __name__ == "__main__":
 
     model = init(x=x, y=y, tf_verbose=1,  # TODO change
                  epochs=1000,
-                 batch_size=512,
-                 learning_rate=0.01,
+                 batch_size=256,
+                 learning_rate=0.0001,
                  neurons=20,
                  dropout_percent=0
                  )
 
-    for i in range(1, 4):
+    for i in range(1, 5):  # Use (1, 6) for last huge dataset
         data = d.load(path=f"datasets/AUD_USD/{i}.csv")
         y = d.labels(data, length=LENGTH_TEMP)
         x = d.batch_norm(data=d.features(data=data,
