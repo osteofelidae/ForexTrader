@@ -22,7 +22,7 @@ def init(x: np.ndarray,
     # PARAM: seed: float: Seed for random number generator
     # PARAM: verbose: bool: Whether to print logs
 
-    # TODO RETURN
+    # RETURN: ensemble: RandomForestClassifier: Trained model
 
     y = np.ndarray.flatten(y)  # Make into 1d array
 
